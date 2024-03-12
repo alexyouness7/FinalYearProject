@@ -43,7 +43,7 @@ const LoginScreen = () => {
       <KeyboardAvoidingView>
         <View style={styles.header}>
           <Text style={styles.title}>Sign In</Text>
-          <Text style={styles.subtitle}>Sign in to your account</Text>
+          <Text style={styles.subtitle}>Sign In to your account</Text>
         </View>
         <View style={styles.form}>
           <View>
