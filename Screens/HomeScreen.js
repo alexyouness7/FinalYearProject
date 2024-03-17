@@ -11,7 +11,6 @@ import {
 } from 'react-native';
 import {ScrollView} from 'react-native-gesture-handler';
 import {useNavigation, DrawerActions} from '@react-navigation/native';
-import DrawerCom from '../components/DrawerCom';
 
 const rw = Dimensions.get('window').width;
 const rh = Dimensions.get('window').height;
@@ -34,13 +33,12 @@ const titanicMovies = [
 
 const HomeScreen = () => {
   const navigation = useNavigation();
-
   const handlePressWonka = () => {
     navigation.navigate('DetailsScreen');
   };
 
-  const handlePressToggleDrawer = () => {
-    navigation.dispatch(DrawerActions.toggleDrawer());
+  const handleDrawer = () => {
+    navigation.dispatch(DrawerActions.openDrawer());
   };
 
   return (
@@ -49,7 +47,7 @@ const HomeScreen = () => {
         <Text style={styles.title} paddingLeft={0.02 * rh}>
           Trending Movies
         </Text>
-        <TouchableOpacity onPress={handlePressToggleDrawer}>
+        <TouchableOpacity onPress={handleDrawer}>
           <Text style={{marginTop: rh * 0.023, marginLeft: rw * 0.3}}>
             Toggle Drawer
           </Text>
@@ -105,7 +103,6 @@ const HomeScreen = () => {
           )}
         />
       </ScrollView>
-      <DrawerCom />
     </SafeAreaView>
   );
 };

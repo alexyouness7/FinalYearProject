@@ -25,6 +25,7 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>
+	
 	<dict>
 	  <!-- Do not change NSAllowsArbitraryLoads to true, or you will risk app rejection! -->
 		<key>NSAllowsArbitraryLoads</key>
@@ -32,6 +33,10 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+<key>NSPhotoLibraryUsageDescription</key>
+<string>This pemission will be used to save photos to your gallery.</string>
+<key>NSCameraUsageDescription</key>
+<string>This permission allows you to capture images using your camera and edit them seamlessly within our App.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string></string>
 	<key>UILaunchStoryboardName</key>

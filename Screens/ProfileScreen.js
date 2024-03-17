@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {
   View,
   Text,
@@ -7,20 +7,39 @@ import {
   Dimensions,
   Pressable,
 } from 'react-native';
-import {useNavigation} from '@react-navigation/native';
+import ImagePicker from 'react-native-image-crop-picker';
 
 const rw = Dimensions.get('window').width;
 const rh = Dimensions.get('window').height;
 
 const ProfileScreen = () => {
-  const navigation = useNavigation();
+  const [profileImage, setProfileImage] = useState(null);
+
+  const openGallery = () => {
+    ImagePicker.openPicker({
+      cropping: true,
+    })
+      .then(image => {
+        setProfileImage(image.path);
+      })
+      .catch(error => {
+        console.log('ImagePicker Error:', error);
+      });
+  };
+
   return (
     <View style={styles.container}>
       {/* Profile Image */}
-      <Image
-        source={require('../assets/home/wonka.webp')}
-        style={styles.profileImage}
-      />
+      <Pressable onPress={openGallery}>
+        <Image
+          source={
+            profileImage
+              ? {uri: profileImage}
+              : require('../assets/home/titanic.jpg')
+          }
+          style={styles.profileImage}
+        />
+      </Pressable>
 
       {/* User Info */}
       <View style={styles.userInfoContainer}>
