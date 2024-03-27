@@ -12,7 +12,7 @@ import RegisterScreen from '../Screens/RegisterScreen';
 import {Image, View, Dimensions, StyleSheet} from 'react-native';
 import DetailsScreen from '../Screens/DetailsScreen';
 import CommentsScreen from '../Screens/CommentsScreen';
-import { createDrawerNavigator } from '@react-navigation/drawer';
+import {createDrawerNavigator} from '@react-navigation/drawer';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -48,7 +48,6 @@ const StackNav = () => {
         component={CommentsScreen}
         options={{headerShown: false, gestureEnabled: false}}
       />
-      <Stack.Screen name='Drawer' component={DrawerNav} options={{headerShown: false, gestureEnabled: false}} />
     </Stack.Navigator>
   );
 };
@@ -134,17 +133,6 @@ const TabNav = () => {
     </Tab.Navigator>
   );
 };
-
-const Drawer = createDrawerNavigator();
-
-const DrawerNav = () => {
-    return (
-      <Drawer.Navigator>
-        {/* <Drawer.Screen name="Home" component={HomeScreen} /> */}
-        {/* Add more screens as needed */}
-      </Drawer.Navigator>
-    );
-  };
 
 export default StackNav;
 

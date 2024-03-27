@@ -21,11 +21,11 @@ const HomeScreen = () => {
   const apikey = 'fbeec6b56cf31d56933b38590510da33';
 
   const upcomingMoviesAPI = `https://api.themoviedb.org/3/movie/upcoming?api_key=${apikey}`;
-  const popularMoviesAPI = `https://api.themoviedb.org/3/movie/popular?api_key=${apikey}`;
+  const topRatedMoviesAPI = `https://api.themoviedb.org/3/movie/top_rated?api_key=${apikey}`;
   const nowPlayingMoviesAPI = `https://api.themoviedb.org/3/movie/now_playing?api_key=${apikey}`;
 
   const [upcomingMovies, setUpcomingMovies] = useState([]);
-  const [popularMovies, setPopularMovies] = useState([]);
+  const [topRatedMovies, setPopularMovies] = useState([]);
   const [nowPlayingMovies, setNowPlayingMovies] = useState([]);
   const [loadingUpcoming, setLoadingUpcoming] = useState(true);
   const [loadingPopular, setLoadingPopular] = useState(true);
@@ -48,7 +48,7 @@ const HomeScreen = () => {
 
   const fetchPopularMovies = async () => {
     try {
-      const response = await fetch(popularMoviesAPI);
+      const response = await fetch(topRatedMoviesAPI);
       const data = await response.json();
       setPopularMovies(data.results);
     } catch (error) {
@@ -80,10 +80,6 @@ const HomeScreen = () => {
     navigation.navigate('DetailsScreen', {movieId: movieId});
   };
 
-  const handleDrawer = () => {
-    navigation.dispatch(DrawerActions.openDrawer());
-  };
-
   if (loadingUpcoming || loadingPopular || loadingNowPlaying) {
     return <Text>Loading...</Text>;
   }
@@ -93,18 +89,13 @@ const HomeScreen = () => {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <ScrollView>
-        <View style={{flexDirection: 'row'}}>
+        <SafeAreaView style={{flexDirection: 'row'}}>
           <Text style={styles.title} paddingLeft={0.02 * rh}>
             Trending Movies
           </Text>
-          <TouchableOpacity onPress={handleDrawer}>
-            <Text style={{marginTop: rh * 0.023, marginLeft: rw * 0.3}}>
-              Toggle Drawer
-            </Text>
-          </TouchableOpacity>
-        </View>
+        </SafeAreaView>
         <FlatList
           data={nowPlayingMovies}
           keyExtractor={item => item.id.toString()}
@@ -113,7 +104,7 @@ const HomeScreen = () => {
           contentContainerStyle={styles.flatListContent}
           renderItem={({item}) => (
             <TouchableOpacity
-              onPress={handlePressWonka}
+              onPress={() => handlePressWonka(item.id)}
               style={styles.trendingMovieContainer}>
               <Image
                 source={{
@@ -137,7 +128,7 @@ const HomeScreen = () => {
           contentContainerStyle={styles.flatListContent}
           renderItem={({item}) => (
             <TouchableOpacity
-              onPress={handlePressWonka}
+              onPress={() => handlePressWonka(item.id)}
               style={styles.movieContainer}>
               <Image
                 source={{
@@ -151,17 +142,17 @@ const HomeScreen = () => {
         />
 
         <Text style={styles.title} paddingLeft={0.02 * rh}>
-          Popular Movies
+          Top Rated Movies
         </Text>
         <FlatList
-          data={popularMovies}
+          data={topRatedMovies}
           keyExtractor={item => item.id.toString()}
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.flatListContent}
           renderItem={({item}) => (
             <TouchableOpacity
-              onPress={handlePressWonka}
+              onPress={() => handlePressWonka(item.id)}
               style={styles.movieContainer}>
               <Image
                 source={{
@@ -176,7 +167,7 @@ const HomeScreen = () => {
 
         {/* Rest of the FlatList sections for upcoming and popular movies */}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 

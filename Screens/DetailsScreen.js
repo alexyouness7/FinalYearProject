@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -13,19 +13,45 @@ import {
   TextInput,
   Pressable,
 } from 'react-native';
-import {useNavigation} from '@react-navigation/native';
+import {useNavigation, useRoute} from '@react-navigation/native';
 
 const rw = Dimensions.get('window').width;
 const rh = Dimensions.get('window').height;
 
 const DetailsScreen = () => {
   const navigation = useNavigation();
-  const apikey = 'fbeec6b56cf31d56933b38590510da33';
+  const route = useRoute();
+  const {movieId} = route.params;
+  console.log('Movie ID:', movieId);
 
-  const movieDetailsAPI = id =>
-    `https://api.themoviedb.org/3/movie/${id}?api_key=${apikey}`;
-  const movieCastDetailsAPI = id =>
-    `https://api.themoviedb.org/3/movie/${id}/credits?api_key=${apikey}`;
+  const [movieDetails, setMovieDetails] = useState(null);
+
+  useEffect(() => {
+    // Fetch movie details using movieId and update movieDetails state
+    fetchMovieDetails(movieId);
+  }, [movieId]);
+
+  console.log('Movie Details:', movieDetails);
+
+  // Function to fetch movie details based on movieId
+  const fetchMovieDetails = async movieId => {
+    try {
+      // Make API call to fetch movie details
+      const response = await fetch(
+        `https://api.themoviedb.org/3/movie/${movieId}?api_key=fbeec6b56cf31d56933b38590510da33`,
+      );
+      const data = await response.json();
+      // Update movieDetails state with fetched data
+      setMovieDetails(data);
+    } catch (error) {
+      console.error('Error fetching movie details:', error);
+    }
+  };
+
+  // const movieDetailsAPI = id =>
+  //   `https://api.themoviedb.org/3/movie/${id}?api_key=${apikey}`;
+  // const movieCastDetailsAPI = id =>
+  //   `https://api.themoviedb.org/3/movie/${id}/credits?api_key=${apikey}`;
 
   const [heartFilled, setHeartFilled] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
@@ -82,7 +108,15 @@ const DetailsScreen = () => {
   return (
     <View style={{flex: 1}}>
       <View>
-        <ImageBackground source={movieData.image} style={styles.coverImage}>
+        <ImageBackground
+          source={
+            movieDetails
+              ? {
+                  uri: `https://image.tmdb.org/t/p/w500${movieDetails.poster_path}`,
+                }
+              : null
+          }
+          style={styles.coverImage}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Image
               source={require('../assets/vector.png')}
@@ -94,53 +128,86 @@ const DetailsScreen = () => {
               }}
             />
           </TouchableOpacity>
-          <TouchableOpacity
-            onPress={handleHeartPress}
-            style={{
-              position: 'absolute',
-              bottom: rh * 0.02,
-              right: rw * 0.02,
-            }}>
-            <Image
-              source={
-                heartFilled
-                  ? require('../assets/details/heartFilled.png')
-                  : require('../assets/details/heart.png')
-              }
+          <View
+            style={{width: rw * 1.1, height: rh * 0.3, alignSelf: 'center'}}>
+            <ImageBackground
+              source={require('../assets/shadow.png')}
               style={{
-                width: rw * 0.06,
-                height: rh * 0.03,
-              }}
-            />
-          </TouchableOpacity>
+                width: '100%',
+                height: '100%',
+                position: 'absolute',
+                marginTop: rh * 0.17,
+              }}>
+              <TouchableOpacity
+                onPress={handleHeartPress}
+                style={{
+                  position: 'absolute',
+                  bottom: rh * 0.02,
+                  right: rw * 0.1,
+                }}>
+                <Image
+                  source={
+                    heartFilled
+                      ? require('../assets/details/heartFilled.png')
+                      : require('../assets/details/heart.png')
+                  }
+                  style={{
+                    width: rw * 0.07,
+                    height: rh * 0.03,
+                  }}
+                />
+              </TouchableOpacity>
+            </ImageBackground>
+          </View>
         </ImageBackground>
       </View>
+      <View
+        style={{width: rw, height: rh * 0.001, backgroundColor: 'lightgrey'}}
+      />
       <ScrollView style={{backgroundColor: 'black'}}>
-        <Text style={styles.title}>{movieData.title}</Text>
-        <Text style={styles.genre}>{movieData.genre}</Text>
-        <Text style={styles.description}>{movieData.description}</Text>
-        <View style={styles.sectionContainer}>
+        <Text style={styles.title}>
+          {movieDetails ? movieDetails.original_title : ''}
+        </Text>
+        <Text style={styles.genre}>
+          {movieDetails
+            ? movieDetails.genres.map(genre => genre.name).join(', ')
+            : ''}
+        </Text>
+        <Text style={styles.description}>
+          {movieDetails ? movieDetails.overview : ''}
+        </Text>
+
+        {/* <View style={styles.sectionContainer}>
           <Text style={styles.sectionTitle}>Actors</Text>
-          <FlatList
-            data={movieData.actors}
-            keyExtractor={item => item.id}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            renderItem={({item}) => (
-              <View style={styles.actorContainer}>
-                <Image source={item.image} style={styles.actorImage} />
-                <Text style={styles.actorName}>{item.name}</Text>
-              </View>
-            )}
-          />
-        </View>
+          {movieDetails && movieDetails.credits ? (
+            <FlatList
+              data={movieDetails.credits.cast}
+              keyExtractor={item => item.id.toString()}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              renderItem={({item}) => (
+                <View style={styles.actorContainer}>
+                  <Image
+                    source={{
+                      uri: `https://image.tmdb.org/t/p/w500${item.profile_path}`,
+                    }}
+                    style={styles.actorImage}
+                  />
+                  <Text style={styles.actorName}>{item.name}</Text>
+                </View>
+              )}
+            />
+          ) : (
+            <Text style={styles.actorName}>No actors available</Text>
+          )}
+        </View> */}
 
         {/* Reviews and Comments Section */}
         <View style={styles.sectionContainer}>
           <Text style={styles.sectionTitle}>Reviews and Comments</Text>
           <View style={styles.buttonsContainer}>
             <TouchableOpacity style={styles.button} onPress={openReviewModal}>
-              <Text style={styles.buttonText}>Review</Text>
+              <Text style={styles.buttonText}>Add A Review</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.button}
@@ -191,10 +258,10 @@ const styles = StyleSheet.create({
   buttonsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginTop: rh * 0.02,
+    marginTop: rh * 0.01,
   },
   button: {
-    backgroundColor: 'blue',
+    backgroundColor: '#992cc2',
     padding: rh * 0.01,
     borderRadius: rh * 0.01,
   },
@@ -203,7 +270,7 @@ const styles = StyleSheet.create({
   },
   coverImage: {
     width: '100%',
-    height: rh * 0.4,
+    height: rh * 0.55,
     resizeMode: 'cover',
     position: 'relative', // Needed for positioning absolute elements
   },
@@ -213,7 +280,7 @@ const styles = StyleSheet.create({
     marginVertical: rh * 0.015,
     textAlign: 'center',
     // backgroundColor: 'lightgrey',
-    width: rw * 0.5,
+    width: rw,
     height: rh * 0.05,
     alignSelf: 'center',
     overflow: 'hidden',
