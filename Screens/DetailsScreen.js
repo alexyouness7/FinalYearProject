@@ -20,6 +20,13 @@ const rh = Dimensions.get('window').height;
 
 const DetailsScreen = () => {
   const navigation = useNavigation();
+  const apikey = 'fbeec6b56cf31d56933b38590510da33';
+
+  const movieDetailsAPI = id =>
+    `https://api.themoviedb.org/3/movie/${id}?api_key=${apikey}`;
+  const movieCastDetailsAPI = id =>
+    `https://api.themoviedb.org/3/movie/${id}/credits?api_key=${apikey}`;
+
   const [heartFilled, setHeartFilled] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [reviewText, setReviewText] = useState('');
@@ -272,11 +279,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     padding: rw * 0.05,
     borderRadius: rw * 0.02,
-    width: rw*0.8,
+    width: rw * 0.8,
     maxHeight: '80%',
   },
   modalInput: {
-    height: rh*0.3,
+    height: rh * 0.3,
     borderColor: 'grey',
     borderWidth: 1,
     marginBottom: rh * 0.02,

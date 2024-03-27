@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   FlatList,
@@ -8,71 +8,130 @@ import {
   Dimensions,
   SafeAreaView,
   TouchableOpacity,
+  ScrollView,
 } from 'react-native';
-import {ScrollView} from 'react-native-gesture-handler';
 import {useNavigation, DrawerActions} from '@react-navigation/native';
 
 const rw = Dimensions.get('window').width;
 const rh = Dimensions.get('window').height;
 
-const avatarMovies = [
-  {key: '1', title: 'Avatar', image: require('../assets/home/avatar.jpg')},
-  {key: '2', title: 'Avatar', image: require('../assets/home/avatar.jpg')},
-  {key: '3', title: 'Avatar', image: require('../assets/home/avatar.jpg')},
-];
-const wonkaMovies = [
-  {key: '1', title: 'Wonka', image: require('../assets/home/wonka.webp')},
-  {key: '2', title: 'Wonka', image: require('../assets/home/wonka.webp')},
-  {key: '3', title: 'Wonka', image: require('../assets/home/wonka.webp')},
-];
-const titanicMovies = [
-  {key: '1', title: 'Titanic', image: require('../assets/home/titanic.jpg')},
-  {key: '2', title: 'Titanic', image: require('../assets/home/titanic.jpg')},
-  {key: '3', title: 'Titanic', image: require('../assets/home/titanic.jpg')},
-];
-
 const HomeScreen = () => {
   const navigation = useNavigation();
-  const handlePressWonka = () => {
-    navigation.navigate('DetailsScreen');
+
+  const apikey = 'fbeec6b56cf31d56933b38590510da33';
+
+  const upcomingMoviesAPI = `https://api.themoviedb.org/3/movie/upcoming?api_key=${apikey}`;
+  const popularMoviesAPI = `https://api.themoviedb.org/3/movie/popular?api_key=${apikey}`;
+  const nowPlayingMoviesAPI = `https://api.themoviedb.org/3/movie/now_playing?api_key=${apikey}`;
+
+  const [upcomingMovies, setUpcomingMovies] = useState([]);
+  const [popularMovies, setPopularMovies] = useState([]);
+  const [nowPlayingMovies, setNowPlayingMovies] = useState([]);
+  const [loadingUpcoming, setLoadingUpcoming] = useState(true);
+  const [loadingPopular, setLoadingPopular] = useState(true);
+  const [loadingNowPlaying, setLoadingNowPlaying] = useState(true);
+  const [errorUpcoming, setErrorUpcoming] = useState(null);
+  const [errorPopular, setErrorPopular] = useState(null);
+  const [errorNowPlaying, setErrorNowPlaying] = useState(null);
+
+  const fetchUpcomingMovies = async () => {
+    try {
+      const response = await fetch(upcomingMoviesAPI);
+      const data = await response.json();
+      setUpcomingMovies(data.results);
+    } catch (error) {
+      setErrorUpcoming('Error fetching upcoming movies.');
+    } finally {
+      setLoadingUpcoming(false);
+    }
+  };
+
+  const fetchPopularMovies = async () => {
+    try {
+      const response = await fetch(popularMoviesAPI);
+      const data = await response.json();
+      setPopularMovies(data.results);
+    } catch (error) {
+      setErrorPopular('Error fetching popular movies.');
+    } finally {
+      setLoadingPopular(false);
+    }
+  };
+
+  const fetchNowPlayingMovies = async () => {
+    try {
+      const response = await fetch(nowPlayingMoviesAPI);
+      const data = await response.json();
+      setNowPlayingMovies(data.results);
+    } catch (error) {
+      setErrorNowPlaying('Error fetching now playing movies.');
+    } finally {
+      setLoadingNowPlaying(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUpcomingMovies();
+    fetchPopularMovies();
+    fetchNowPlayingMovies();
+  }, []);
+
+  const handlePressWonka = movieId => {
+    navigation.navigate('DetailsScreen', {movieId: movieId});
   };
 
   const handleDrawer = () => {
     navigation.dispatch(DrawerActions.openDrawer());
   };
 
+  if (loadingUpcoming || loadingPopular || loadingNowPlaying) {
+    return <Text>Loading...</Text>;
+  }
+
+  if (errorUpcoming || errorPopular || errorNowPlaying) {
+    return <Text>{errorUpcoming || errorPopular || errorNowPlaying}</Text>;
+  }
+
   return (
     <SafeAreaView style={styles.container}>
-      <View style={{flexDirection: 'row'}}>
-        <Text style={styles.title} paddingLeft={0.02 * rh}>
-          Trending Movies
-        </Text>
-        <TouchableOpacity onPress={handleDrawer}>
-          <Text style={{marginTop: rh * 0.023, marginLeft: rw * 0.3}}>
-            Toggle Drawer
-          </Text>
-        </TouchableOpacity>
-      </View>
       <ScrollView>
+        <View style={{flexDirection: 'row'}}>
+          <Text style={styles.title} paddingLeft={0.02 * rh}>
+            Trending Movies
+          </Text>
+          <TouchableOpacity onPress={handleDrawer}>
+            <Text style={{marginTop: rh * 0.023, marginLeft: rw * 0.3}}>
+              Toggle Drawer
+            </Text>
+          </TouchableOpacity>
+        </View>
         <FlatList
-          data={avatarMovies}
-          keyExtractor={item => item.key.toString()}
+          data={nowPlayingMovies}
+          keyExtractor={item => item.id.toString()}
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.flatListContent}
-          renderItem={({item, index}) => (
-            <View style={styles.movieContainer}>
-              <Image source={item.image} style={styles.avatarMovieImage} />
+          renderItem={({item}) => (
+            <TouchableOpacity
+              onPress={handlePressWonka}
+              style={styles.trendingMovieContainer}>
+              <Image
+                source={{
+                  uri: `https://image.tmdb.org/t/p/w500${item.poster_path}`,
+                }}
+                style={styles.trendingMovieImage}
+              />
               <Text style={styles.movieTitle}>{item.title}</Text>
-            </View>
+            </TouchableOpacity>
           )}
         />
+
         <Text style={styles.title} paddingLeft={0.02 * rh}>
-          Screen 1
+          Upcoming Movies
         </Text>
         <FlatList
-          data={wonkaMovies}
-          keyExtractor={item => item.id}
+          data={upcomingMovies}
+          keyExtractor={item => item.id.toString()}
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.flatListContent}
@@ -80,28 +139,42 @@ const HomeScreen = () => {
             <TouchableOpacity
               onPress={handlePressWonka}
               style={styles.movieContainer}>
-              <Image source={item.image} style={styles.movieImage} />
+              <Image
+                source={{
+                  uri: `https://image.tmdb.org/t/p/w500${item.poster_path}`,
+                }}
+                style={styles.movieImage}
+              />
               <Text style={styles.movieTitle}>{item.title}</Text>
             </TouchableOpacity>
           )}
         />
-        <Text
-          style={[styles.title, {textAlign: 'left'}, {paddingLeft: 0.02 * rh}]}>
-          Upcoming Movies
+
+        <Text style={styles.title} paddingLeft={0.02 * rh}>
+          Popular Movies
         </Text>
         <FlatList
-          data={titanicMovies}
-          keyExtractor={item => item.id}
+          data={popularMovies}
+          keyExtractor={item => item.id.toString()}
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.flatListContent}
           renderItem={({item}) => (
-            <View style={styles.movieContainer}>
-              <Image source={item.image} style={styles.titanicMovieImage} />
+            <TouchableOpacity
+              onPress={handlePressWonka}
+              style={styles.movieContainer}>
+              <Image
+                source={{
+                  uri: `https://image.tmdb.org/t/p/w500${item.poster_path}`,
+                }}
+                style={styles.movieImage}
+              />
               <Text style={styles.movieTitle}>{item.title}</Text>
-            </View>
+            </TouchableOpacity>
           )}
         />
+
+        {/* Rest of the FlatList sections for upcoming and popular movies */}
       </ScrollView>
     </SafeAreaView>
   );
@@ -119,6 +192,15 @@ const styles = StyleSheet.create({
   flatListContent: {
     alignItems: 'center',
   },
+  trendingMovieContainer: {
+    marginHorizontal: rw * 0.03,
+    alignItems: 'center',
+  },
+  trendingMovieImage: {
+    width: rw * 0.75,
+    height: rh * 0.5,
+    borderRadius: rw * 0.08,
+  },
   movieContainer: {
     marginHorizontal: rw * 0.03,
     alignItems: 'center',
@@ -127,16 +209,6 @@ const styles = StyleSheet.create({
     width: rw * 0.42,
     height: rh * 0.25,
     borderRadius: rw * 0.02,
-  },
-  avatarMovieImage: {
-    width: rw * 0.75,
-    height: rh * 0.5,
-    borderRadius: rw * 0.08,
-  },
-  titanicMovieImage: {
-    width: rw * 0.42,
-    height: rh * 0.25,
-    borderRadius: rw * 0.06,
   },
   movieTitle: {
     marginTop: rh * 0.01,
