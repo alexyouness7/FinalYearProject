@@ -14,6 +14,7 @@ import {
   Pressable,
 } from 'react-native';
 import {useNavigation, useRoute} from '@react-navigation/native';
+import CastCard from '../components/CastCard';
 
 const rw = Dimensions.get('window').width;
 const rh = Dimensions.get('window').height;
@@ -36,9 +37,9 @@ const DetailsScreen = () => {
   // Function to fetch movie details based on movieId
   const fetchMovieDetails = async movieId => {
     try {
-      // Make API call to fetch movie details
+      // Make API call to fetch movie details including cast
       const response = await fetch(
-        `https://api.themoviedb.org/3/movie/${movieId}?api_key=fbeec6b56cf31d56933b38590510da33`,
+        `https://api.themoviedb.org/3/movie/${movieId}?api_key=fbeec6b56cf31d56933b38590510da33&append_to_response=credits`,
       );
       const data = await response.json();
       // Update movieDetails state with fetched data
@@ -48,39 +49,9 @@ const DetailsScreen = () => {
     }
   };
 
-  // const movieDetailsAPI = id =>
-  //   `https://api.themoviedb.org/3/movie/${id}?api_key=${apikey}`;
-  // const movieCastDetailsAPI = id =>
-  //   `https://api.themoviedb.org/3/movie/${id}/credits?api_key=${apikey}`;
-
   const [heartFilled, setHeartFilled] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [reviewText, setReviewText] = useState('');
-
-  const movieData = {
-    title: 'Wonka',
-    image: require('../assets/home/wonka.webp'),
-    genre: 'Fantasy',
-    description:
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin id metus nec urna varius laoreet. Sed ac dolor id est ullamcorper efficitur non eget massa.',
-    actors: [
-      {
-        id: 'actor1',
-        name: 'Thimotee Chalamet',
-        image: require('../assets/details/images.jpeg'),
-      },
-      {
-        id: 'actor2',
-        name: 'Rowan Atkinson',
-        image: require('../assets/details/bb.jpeg'),
-      },
-      {
-        id: 'actor3',
-        name: 'Hugh Grant',
-        image: require('../assets/details/ppp.webp'),
-      },
-    ],
-  };
 
   const handleHeartPress = () => {
     setHeartFilled(!heartFilled);
@@ -103,6 +74,10 @@ const DetailsScreen = () => {
   const goToCommentsScreen = () => {
     // Navigate to CommentsScreen
     navigation.navigate('CommentsScreen'); // Make sure to replace 'CommentsScreen' with the actual name of your CommentsScreen component
+  };
+
+  const goToBookingScreen = () => {
+    navigation.navigate('BookingScreen', {movieDetails: movieDetails});
   };
 
   return (
@@ -129,7 +104,11 @@ const DetailsScreen = () => {
             />
           </TouchableOpacity>
           <View
-            style={{width: rw * 1.1, height: rh * 0.3, alignSelf: 'center'}}>
+            style={{
+              width: rw * 1.1,
+              height: rh * 0.3,
+              alignSelf: 'center',
+            }}>
             <ImageBackground
               source={require('../assets/shadow.png')}
               style={{
@@ -173,49 +152,70 @@ const DetailsScreen = () => {
             ? movieDetails.genres.map(genre => genre.name).join(', ')
             : ''}
         </Text>
+
         <Text style={styles.description}>
           {movieDetails ? movieDetails.overview : ''}
         </Text>
+        <View style={styles.movieDetailsContainer}>
+          <Text style={styles.movieDetail}>
+            Duration:{' '}
+            {movieDetails
+              ? Math.floor(movieDetails.runtime / 60) +
+                'h ' +
+                (movieDetails.runtime % 60) +
+                'm'
+              : ''}
+          </Text>
+          <Text style={styles.movieDetail}>
+            Rating:{' '}
+            {movieDetails
+              ? movieDetails.vote_average + ' (' + movieDetails.vote_count + ')'
+              : ''}
+          </Text>
+          <Text style={styles.movieDetail}>
+            Release Date: {movieDetails ? movieDetails.release_date : ''}
+          </Text>
+        </View>
 
-        {/* <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Actors</Text>
-          {movieDetails && movieDetails.credits ? (
+        <View style={styles.sectionContainer}>
+          <Text style={styles.sectionTitle}>Cast</Text>
+          {movieDetails && movieDetails.credits && movieDetails.credits.cast ? (
             <FlatList
               data={movieDetails.credits.cast}
               keyExtractor={item => item.id.toString()}
               horizontal
+              contentContainerStyle={{paddingLeft: 10}}
               showsHorizontalScrollIndicator={false}
               renderItem={({item}) => (
-                <View style={styles.actorContainer}>
-                  <Image
-                    source={{
-                      uri: `https://image.tmdb.org/t/p/w500${item.profile_path}`,
-                    }}
-                    style={styles.actorImage}
-                  />
-                  <Text style={styles.actorName}>{item.name}</Text>
-                </View>
+                <CastCard
+                  shouldMarginatedAtEnd={true}
+                  cardWidth={80}
+                  imagePath={`https://image.tmdb.org/t/p/w500${item.profile_path}`}
+                  title={item.name}
+                  subtitle=""
+                />
               )}
             />
           ) : (
-            <Text style={styles.actorName}>No actors available</Text>
+            <Text>No cast available</Text>
           )}
-        </View> */}
+        </View>
 
         {/* Reviews and Comments Section */}
-        <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Reviews and Comments</Text>
-          <View style={styles.buttonsContainer}>
-            <TouchableOpacity style={styles.button} onPress={openReviewModal}>
-              <Text style={styles.buttonText}>Add A Review</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.button}
-              onPress={goToCommentsScreen}>
-              <Text style={styles.buttonText}>View Comments</Text>
-            </TouchableOpacity>
-          </View>
+        <View style={styles.buttonsContainer}>
+          <TouchableOpacity style={styles.button} onPress={openReviewModal}>
+            <Text style={styles.buttonText}>Add A Review</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={goToCommentsScreen}>
+            <Text style={styles.buttonText}>View Comments</Text>
+          </TouchableOpacity>
         </View>
+        <TouchableOpacity
+          style={[styles.button, styles.bookButton]}
+          onPress={goToBookingScreen}>
+          <Text style={styles.bookButtonText}>Book This Movie</Text>
+        </TouchableOpacity>
+        <View style={{height: rh * 0.05}} />
 
         {/* Review Modal */}
         <Modal
@@ -252,18 +252,18 @@ const DetailsScreen = () => {
   );
 };
 const styles = StyleSheet.create({
-  // container: {
-  //   flex: 1,
-  // },
   buttonsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'center',
     marginTop: rh * 0.01,
+    marginBottom: rh * 0.02,
   },
   button: {
     backgroundColor: '#992cc2',
-    padding: rh * 0.01,
+    paddingVertical: rh * 0.01,
+    paddingHorizontal: rw * 0.05,
     borderRadius: rh * 0.01,
+    marginHorizontal: rw * 0.02,
   },
   buttonText: {
     color: 'white',
@@ -279,12 +279,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginVertical: rh * 0.015,
     textAlign: 'center',
-    // backgroundColor: 'lightgrey',
-    width: rw,
-    height: rh * 0.05,
-    alignSelf: 'center',
-    overflow: 'hidden',
-    borderRadius: 20,
     color: 'white',
   },
   genre: {
@@ -295,9 +289,10 @@ const styles = StyleSheet.create({
   description: {
     fontSize: rh * 0.02,
     margin: rh * 0.015,
-    textAlign: 'center',
+    textAlign: 'justify', // Add this line to justify the text
     color: 'white',
   },
+
   sectionContainer: {
     marginHorizontal: rw * 0.03,
     marginBottom: rh * 0.015,
@@ -307,34 +302,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: rh * 0.015,
     color: 'white',
-  },
-  actorContainer: {
-    margin: rh * 0.01,
-    alignItems: 'center',
-  },
-  actorImage: {
-    width: rw * 0.4,
-    height: rh * 0.2,
-    borderRadius: rh * 0.02,
-    marginBottom: rh * 0.01,
-  },
-  actorName: {
-    fontSize: rh * 0.015,
-    textAlign: 'center',
-    color: 'white',
-  },
-  backButton: {
-    padding: rh * 0.015,
-    backgroundColor: '#add8e6',
-    alignItems: 'center',
-    position: 'absolute',
-    bottom: -0.1 * rh,
-    left: 0,
-    width: '100%',
-  },
-  backButtonText: {
-    color: '#000',
-    fontWeight: 'bold',
   },
   modalContainer: {
     flex: 1,
@@ -361,7 +328,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
   },
   modalButton: {
-    padding: rh * 0.015,
+    paddingVertical: rh * 0.015,
+    paddingHorizontal: rw * 0.05,
     borderRadius: rh * 0.01,
   },
   submitButton: {
@@ -369,6 +337,27 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     backgroundColor: 'red',
+  },
+  movieDetailsContainer: {
+    marginHorizontal: rw * 0.03,
+    marginBottom: rh * 0.015,
+  },
+  movieDetail: {
+    fontSize: rh * 0.02,
+    color: 'white',
+    marginBottom: rh * 0.01,
+  },
+  bookButton: {
+    backgroundColor: '#992bb5',
+    paddingVertical: rh * 0.01,
+    paddingHorizontal: rw * 0.05,
+    borderRadius: rh * 0.01,
+    marginTop: rh * 0.02,
+    alignSelf: 'center',
+  },
+  bookButtonText: {
+    color: 'white',
+    textAlign: 'center',
   },
 });
 

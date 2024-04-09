@@ -12,6 +12,8 @@ import RegisterScreen from '../Screens/RegisterScreen';
 import {Image, View, Dimensions, StyleSheet} from 'react-native';
 import DetailsScreen from '../Screens/DetailsScreen';
 import CommentsScreen from '../Screens/CommentsScreen';
+import BookingScreen from '../Screens/BookingScreen';
+import DateTime from '../Screens/DateTime';
 import {createDrawerNavigator} from '@react-navigation/drawer';
 
 const Stack = createStackNavigator();
@@ -46,6 +48,16 @@ const StackNav = () => {
       <Stack.Screen
         name="CommentsScreen"
         component={CommentsScreen}
+        options={{headerShown: false, gestureEnabled: false}}
+      />
+      <Stack.Screen
+        name="BookingScreen"
+        component={BookingScreen}
+        options={{headerShown: false, gestureEnabled: false}}
+      />
+      <Stack.Screen
+        name="DateTime"
+        component={DateTime}
         options={{headerShown: false, gestureEnabled: false}}
       />
     </Stack.Navigator>
