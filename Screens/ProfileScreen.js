@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -8,12 +8,22 @@ import {
   Pressable,
 } from 'react-native';
 import ImagePicker from 'react-native-image-crop-picker';
+import auth from '@react-native-firebase/auth';
 
 const rw = Dimensions.get('window').width;
 const rh = Dimensions.get('window').height;
 
 const ProfileScreen = () => {
   const [profileImage, setProfileImage] = useState(null);
+  const [userEmail, setUserEmail] = useState('');
+
+  useEffect(() => {
+    // Fetch the currently logged-in user's email
+    const currentUser = auth().currentUser;
+    if (currentUser) {
+      setUserEmail(currentUser.email);
+    }
+  }, []);
 
   const openGallery = () => {
     ImagePicker.openPicker({
@@ -44,7 +54,9 @@ const ProfileScreen = () => {
       {/* User Info */}
       <View style={styles.userInfoContainer}>
         <Text style={styles.userName}>John Doe</Text>
-        <Text style={styles.userEmail}>john.doe@example.com</Text>
+        <Text style={styles.userEmail}>{userEmail}</Text>
+
+        {/* Display user's email */}
       </View>
 
       {/* Logout Button */}
@@ -81,7 +93,7 @@ const styles = StyleSheet.create({
     color: 'gray',
   },
   logoutButton: {
-    backgroundColor: '#87CEEB', // Light Blue
+    backgroundColor: '#87CEEB',
     padding: rh * 0.015,
     borderRadius: rh * 0.01,
   },

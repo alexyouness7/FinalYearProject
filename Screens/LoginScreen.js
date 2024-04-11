@@ -8,8 +8,10 @@ import {
   TextInput,
   Pressable,
   Dimensions,
+  Alert,
   SafeAreaView,
 } from 'react-native';
+import auth from '@react-native-firebase/auth';
 //import {SafeAreaView} from 'react-native-safe-area-context';
 //import {useNavigation} from '@react-navigation/native';
 
@@ -22,21 +24,41 @@ const LoginScreen = () => {
   const navigation = useNavigation();
 
   const login = () => {
-    // Replace this with your authentication logic
-    // For example, you can use AsyncStorage or another authentication method
-    console.log('Authentication logic here');
-    // After successful authentication, navigate to the desired screen
-    // navigation.navigate('Main');
-    navigation.navigate('Tabs');
-  };
+    console.log(email, password);
+    if (email === '' || password === '') {
+      Alert.alert(
+        'Invalid Details',
+        'Please enter your email and password',
+        [{text: 'OK'}],
+        {cancelable: false},
+      );
+      return;
+    }
 
-  useEffect(() => {
-    // Replace this with your authentication check logic
-    // For example, you can use AsyncStorage or another authentication method
-    console.log('Authentication check logic here');
-    // If authenticated, navigate to the desired screen
-    // navigation.navigate("Drawer");
-  }, []);
+    auth()
+      .signInWithEmailAndPassword(email, password)
+      .then(() => {
+        console.log('User logged in successfully!');
+        navigation.navigate('Tabs'); // Replace 'Home' with the name of your desired screen
+      })
+      .catch(error => {
+        if (
+          error.code === 'auth/user-not-found' ||
+          error.code === 'auth/wrong-password'
+        ) {
+          Alert.alert(
+            'Invalid Credentials',
+            'Please check your email and password.',
+          );
+        } else {
+          Alert.alert(
+            'Error',
+            'An error occurred while logging in. Please try again later.',
+          );
+        }
+        console.error('Error logging in: ', error);
+      });
+  };
 
   return (
     <SafeAreaView style={styles.container}>

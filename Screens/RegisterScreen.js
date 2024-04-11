@@ -10,11 +10,9 @@ import {
   Dimensions,
 } from 'react-native';
 import React, {useState} from 'react';
-import {createUserWithEmailAndPassword} from 'firebase/auth';
-//import {setDoc, doc} from 'firebase/firestore';
-import {auth, db} from '../Firebase';
 import {useNavigation} from '@react-navigation/native';
 import LoginScreen from './LoginScreen';
+import auth from '@react-native-firebase/auth';
 
 const rw = Dimensions.get('window').width;
 const rh = Dimensions.get('window').height;
@@ -40,23 +38,30 @@ const RegisterScreen = () => {
         ],
         {cancelable: false},
       );
+      return; // Exit function early if any field is empty
     }
 
-    // createUserWithEmailAndPassword(auth, email, password)
-    //   .then(userCredentials => {
-    //     const user = userCredentials._tokenResponse.email;
-    //     const uid = auth.currentUser.uid;
-
-    //     setDoc(doc(db, 'users', `${uid}`), {
-    //       email: user,
-    //       phone: phone,
-    //     }).then(() => {
-    //       console.log('User registered successfully');
-    //     });
-    //   })
-    //   .catch(error => {
-    //     console.error('Error creating user: ', error);
-    //   });
+    auth()
+      .createUserWithEmailAndPassword(email, password)
+      .then(() => {
+        console.log('User account created & signed in!');
+        // Optionally, you can navigate the user to another screen after successful registration
+        navigation.navigate('Tabs'); // Replace 'Home' with the name of your desired screen
+      })
+      .catch(error => {
+        if (error.code === 'auth/email-already-in-use') {
+          Alert.alert(
+            'Email already in use',
+            'Please use a different email address.',
+          );
+        } else {
+          Alert.alert(
+            'Error',
+            'An error occurred while creating the account. Please try again later.',
+          );
+        }
+        console.error('Error creating user: ', error);
+      });
   };
 
   return (
