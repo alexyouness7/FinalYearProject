@@ -53,7 +53,7 @@ const ProfileScreen = () => {
 
       {/* User Info */}
       <View style={styles.userInfoContainer}>
-        <Text style={styles.userName}>John Doe</Text>
+        <Text style={styles.userName}>Alex Younes</Text>
         <Text style={styles.userEmail}>{userEmail}</Text>
 
         {/* Display user's email */}
