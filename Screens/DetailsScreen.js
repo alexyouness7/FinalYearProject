@@ -15,7 +15,8 @@ import {
 } from 'react-native';
 import {useNavigation, useRoute} from '@react-navigation/native';
 import CastCard from '../components/CastCard';
-
+import firestore from '@react-native-firebase/firestore';
+import {collection} from 'firebase/firestore';
 const rw = Dimensions.get('window').width;
 const rh = Dimensions.get('window').height;
 
@@ -65,10 +66,18 @@ const DetailsScreen = () => {
     setModalVisible(false);
   };
 
-  const submitReview = () => {
-    // Handle the review submission logic
-    console.log('Submitted Review:', reviewText);
-    closeReviewModal();
+  const submitReview = async () => {
+    try {
+      await firestore().collection('reviews').add({
+        reviewText: reviewText,
+        movieId: movieId,
+        userID: null,
+      });
+      console.log('Review submitted successfully!');
+      closeReviewModal();
+    } catch (error) {
+      console.error('Error submitting review:', error);
+    }
   };
 
   const goToCommentsScreen = () => {

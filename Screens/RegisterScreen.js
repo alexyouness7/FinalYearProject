@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -20,65 +20,109 @@ const rh = Dimensions.get('window').height;
 const RegisterScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [phone, setPhone] = useState('');
+  const [phoneNb, setPhoneNb] = useState('');
   const [username, setUsername] = useState('');
   const navigation = useNavigation();
 
-  const register = () => {
-    if (email === '' || password === '' || phone === '' || username === '') {
-      Alert.alert(
-        'Invalid Details',
-        'Please enter all the credentials',
-        [{text: 'OK', onPress: () => console.log('OK Pressed')}],
-        {cancelable: false},
+  // const register = async () => {
+  //   if (email === '' || password === '' || phoneNb === '' || username === '') {
+  //     // Alert the user if any field is empty
+  //     Alert.alert(
+  //       'Invalid Details',
+  //       'Please enter all the credentials',
+  //       [{text: 'OK', onPress: () => console.log('OK Pressed')}],
+  //       {cancelable: false},
+  //     );
+  //     return;
+  //   }
+
+  //   try {
+  //     const userCredential = await auth()
+  //       .createUserWithEmailAndPassword(email, password)
+  //       .then(console.log('User created successfully'));
+  //     const user = userCredential.user;
+  //     const uid = user.uid;
+  //     await firestore()
+  //       .collection('users')
+  //       .doc(uid)
+  //       .set({
+  //         email,
+  //         phoneNb,
+  //         username,
+  //       })
+  //       .then(() => {
+  //         console.log('User data saved to Firestore!');
+  //         // Navigate to the Tabs screen upon successful registration
+  //         navigation.navigate('Tabs');
+  //         // Show a success message to the user
+  //         Alert.alert('Registration Successful', 'Welcome to our app!');
+  //       })
+  //       .catch(error => {
+  //         console.error('Error saving user data to Firestore: ', error);
+  //         // Handle Firestore save error
+  //         Alert.alert('Error', 'An error occurred. Please try again later.');
+  //       });
+  //   } catch (error) {
+  //     if (error.code === 'auth/email-already-in-use') {
+  //       // Alert the user if the email is already in use
+  //       Alert.alert(
+  //         'Email already in use',
+  //         'Please use a different email address.',
+  //       );
+  //     } else {
+  //       // Alert the user if there's an error creating the account
+  //       Alert.alert(
+  //         'Error',
+  //         'An error occurred while creating the account. Please try again later.',
+  //       );
+  //     }
+  //     // console.error('Error creating user: ', error);
+  //   }
+  // };
+
+  const register = async () => {
+    let uid;
+    try {
+      const userCredential = await auth().createUserWithEmailAndPassword(
+        email,
+        password,
       );
-      return;
-    }
+      console.log('userCredential: ', userCredential);
+      const user = userCredential.user;
+      console.log('user', user);
+      uid = user.uid;
+      console.log('uid', user.uid);
 
-    auth()
-      .createUserWithEmailAndPassword(email, password)
-      .then(userCredential => {
-        const user = userCredential.user;
-        // Save username to Firestore
-        firestore()
-          .collection('users')
-          .doc(user.uid)
-          .set({
-            email,
-            phone,
-            username,
-          })
-          .then(() => {
-            console.log('User data saved to Firestore!');
-            navigation.navigate('Tabs');
-          })
-          .catch(error => {
-            console.error('Error saving user data to Firestore: ', error);
-            // Handle Firestore save error
-            Alert.alert('Error', 'An error occurred. Please try again later.');
-          });
-      })
-      .catch(error => {
-        if (error.code === 'auth/email-already-in-use') {
-          Alert.alert(
-            'Email already in use',
-            'Please use a different email address.',
-          );
-        } else {
-          Alert.alert(
-            'Error',
-            'An error occurred while creating the account. Please try again later.',
-          );
-        }
-        console.error('Error creating user: ', error);
+      await firestore().collection('users').doc(uid).add({
+        email,
+        phoneNb,
+        username,
       });
-  };
 
+      console.log('User Created and Firestore Document created successfully.');
+      console.log('Redirecting: ' + email + ' to Home Screen');
+      navigation.navigate('Tabs'); // Replace 'Home' with the name of your desired screen
+    } catch (error) {
+      console.log('Error occurred: ', error);
+      if (error.code === 'auth/email-already-in-use') {
+        Alert.alert('Error', 'Email already in use');
+      } else {
+        Alert.alert('Error', 'An error occurred while creating the account.');
+      }
+    }
+  };
   return (
     <SafeAreaView
       style={{flex: 1, backgroundColor: 'white', padding: rh * 0.05}}>
       <TouchableOpacity onPress={() => navigation.goBack()}>
-        <Text style={{fontSize: rh * 0.02, marginBottom: rh * 0.02}}>Back</Text>
+        <Text
+          style={{
+            fontSize: rh * 0.02,
+            marginLeft: rw * 0.06,
+            marginTop: rh * 0.02,
+          }}>
+          Back
+        </Text>
       </TouchableOpacity>
 
       <KeyboardAvoidingView>
@@ -129,8 +173,8 @@ const RegisterScreen = () => {
           <View style={{marginTop: rh * 0.015}}>
             <Text style={styles.label}>Phone</Text>
             <TextInput
-              value={phone}
-              onChangeText={text => setPhone(text)}
+              value={phoneNb}
+              onChangeText={text => setPhoneNb(text)}
               placeholder="Enter your phone number"
               placeholderTextColor={'black'}
               style={styles.input}
@@ -154,8 +198,13 @@ const RegisterScreen = () => {
           <Text style={styles.registerButtonText}>Register</Text>
         </Pressable>
 
-        <View style={{flexDirection: 'row'}}>
-          <Text style={{marginLeft: rw * 0.05}}>Already have an account ?</Text>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignSelf: 'center',
+            padding: rh * 0.02,
+          }}>
+          <Text>Already have an account ?</Text>
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Text style={{color: 'blue', textDecorationLine: 'underline'}}>
               {' '}
