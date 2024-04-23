@@ -93,7 +93,7 @@ const RegisterScreen = () => {
       uid = user.uid;
       console.log('uid', user.uid);
 
-      await firestore().collection('users').doc(uid).add({
+      await firestore().collection('users').doc(uid).set({
         email,
         phoneNb,
         username,
